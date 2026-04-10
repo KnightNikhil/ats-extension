@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>ResumeATS</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap"
+    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --surface-container-highest: #35343a;
+      --surface-dim: #131318;
+      --error: #ffb4ab;
+      --secondary-fixed: #61ff98;
+      --on-surface: #e4e1e9;
+      --outline: #918fa1;
+      --secondary: #7cffa3;
+      --surface: #131318;
+      --surface-container-low: #1b1b20;
+      --surface-container: #1f1f24;
+      --surface-container-high: #2a292f;
+      --primary: #c4c0ff;
+      --surface-container-lowest: #0e0e13;
+      --primary-container: #8781ff;
+      --on-surface-variant: #c7c4d8;
+      --outline-variant: #464555;
+      --secondary-container: #00e779;
+      --background: #131318;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 350px;
+      min-height: 450px;
+      background-color: var(--background);
+      color: var(--on-surface);
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      display: block;
+    }
+
+    .plus-jakarta-sans {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    header {
+      background-color: #131318;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 16px;
+      width: 100%;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .header-left .material-symbols-outlined {
+      color: var(--secondary);
+      font-size: 20px;
+    }
+
+    h1 {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 20px;
+      font-weight: 900;
+      background: linear-gradient(to right, #6C63FF, #00E87A);
+      -webkit-background-clip: text;
+      color: transparent;
+      letter-spacing: -0.5px;
+    }
+
+    .close-btn {
+      color: #9ca3af;
+      background: none;
+      border: none;
+      cursor: pointer;
+      transition: color 0.2s, transform 0.2s;
+    }
+
+    .close-btn:hover {
+      color: white;
+      transform: scale(0.95);
+    }
+
+    main {
+      padding: 8px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      position: relative;
+      z-index: 10;
+      padding-bottom: 60px;
+    }
+
+    #statusMsg {
+      display: none;
+      margin: 0 16px;
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-family: 'JetBrains Mono', monospace;
+      line-height: 1.4;
+      position: relative;
+      z-index: 10;
+    }
+
+    #statusMsg.success {
+      background: rgba(0, 232, 122, .1);
+      color: var(--secondary-container);
+      border: 1px solid rgba(0, 232, 122, .25);
+    }
+
+    #statusMsg.error {
+      background: rgba(255, 77, 109, .1);
+      color: var(--error);
+      border: 1px solid rgba(255, 77, 109, .25);
+    }
+
+    .section-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--outline);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .section-label .material-symbols-outlined {
+      font-size: 12px;
+    }
+
+    .input-group {
+      position: relative;
+      display: flex;
+      gap: 8px;
+    }
+
+    .input-wrapper {
+      flex: 1;
+      position: relative;
+      display: flex;
+      transition: all 0.2s;
+    }
+
+    input[type=password],
+    input[type=text] {
+      width: 100%;
+      background: var(--surface-container-lowest);
+      border: 1px solid transparent;
+      border-radius: 12px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--on-surface);
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    input[type=password]:focus,
+    input[type=text]:focus {
+      border-color: rgba(196, 192, 255, 0.4);
+      box-shadow: 0 0 0 1px rgba(196, 192, 255, 0.3);
+    }
+
+    .input-border {
+      position: absolute;
+      inset: 0;
+      border-radius: 12px;
+      border: 1px solid rgba(196, 192, 255, 0.1);
+      pointer-events: none;
+      transition: border-color 0.2s;
+    }
+
+    .input-wrapper:focus-within .input-border {
+      border-color: transparent;
+    }
+
+    .btn-save {
+      background: var(--surface-container-high);
+      color: var(--on-surface);
+      border-radius: 12px;
+      padding: 8px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 0.2s;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      border: none;
+    }
+
+    .btn-save:hover {
+      background: #39383e;
+    }
+
+    .saved-key {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(0, 232, 122, .08);
+      border: 1px solid rgba(0, 232, 122, .2);
+      border-radius: 12px;
+      padding: 10px 16px;
+    }
+
+    .saved-key-text {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--secondary-container);
+    }
+
+    .clear-btn {
+      font-size: 11px;
+      color: var(--outline);
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: background 0.2s, color 0.2s;
+    }
+
+    .clear-btn:hover {
+      background: rgba(255, 77, 109, .1);
+      color: var(--error);
+    }
+
+    .upload-wrapper {
+      position: relative;
+      cursor: pointer;
+      display: block;
+    }
+
+    .upload-glow {
+      position: absolute;
+      inset: -2px;
+      background: linear-gradient(to right, rgba(196, 192, 255, 0.2), rgba(124, 255, 163, 0.2));
+      border-radius: 16px;
+      filter: blur(4px);
+      opacity: 0.3;
+      transition: opacity 0.5s;
+      pointer-events: none;
+    }
+
+    .upload-wrapper:hover .upload-glow {
+      opacity: 0.5;
+    }
+
+    .upload-zone {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border: 2px dashed rgba(70, 69, 85, 0.3);
+      border-radius: 16px;
+      padding: 24px;
+      background: rgba(31, 31, 36, 0.6);
+      backdrop-filter: blur(12px);
+      transition: all 0.2s;
+    }
+
+    .upload-wrapper:hover .upload-zone {
+      border-color: rgba(196, 192, 255, 0.4);
+    }
+
+    .upload-zone.has-file {
+      border-color: var(--secondary-container);
+      border-style: solid;
+      background: rgba(0, 232, 122, .04);
+    }
+
+    .upload-icon-box {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: var(--surface-container-high);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+
+    .upload-icon-box .material-symbols-outlined {
+      color: var(--primary-container);
+      font-size: 24px;
+      font-variation-settings: 'FILL' 1;
+    }
+
+    .upload-text {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--on-surface);
+    }
+
+    .upload-sub {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px;
+      text-transform: uppercase;
+      color: var(--outline);
+      margin-top: 4px;
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    .actions {
+      padding-top: 8px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .btn-primary {
+      width: 100%;
+      background: linear-gradient(to bottom right, #6C63FF, #00E87A);
+      color: white;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      padding: 14px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 12px rgba(108, 99, 255, 0.3);
+    }
+
+    .btn-primary:active {
+      transform: scale(0.95);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 0 15px rgba(108, 99, 255, 0.4);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-sec {
+      width: 100%;
+      padding: 12px;
+      border-radius: 12px;
+      border: 1px solid var(--outline-variant);
+      background: transparent;
+      color: var(--on-surface);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-sec:hover {
+      border-color: rgba(196, 192, 255, 0.5);
+      background: rgba(196, 192, 255, 0.05);
+    }
+
+    .decorative-bg-1 {
+      position: absolute;
+      top: -96px;
+      left: -96px;
+      width: 192px;
+      height: 192px;
+      background: rgba(196, 192, 255, 0.1);
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .decorative-bg-2 {
+      position: absolute;
+      bottom: -96px;
+      right: -96px;
+      width: 192px;
+      height: 192px;
+      background: rgba(124, 255, 163, 0.1);
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(31, 31, 36, 0.6);
+      backdrop-filter: blur(20px);
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 50;
+    }
+
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #00E87A;
+      box-shadow: 0 0 8px #00E87A;
+    }
+
+    .status-text {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--outline-variant);
+      text-transform: uppercase;
+      letter-spacing: -0.5px;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 16px;
+    }
+
+    .footer-links a {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px;
+      color: var(--outline);
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: color 0.2s;
+      letter-spacing: -0.5px;
+    }
+
+    .footer-links a:hover {
+      color: var(--primary);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="decorative-bg-1"></div>
+  <div class="decorative-bg-2"></div>
+
+  <header>
+    <div class="header-left">
+      <span class="material-symbols-outlined">bolt</span>
+      <h1 class="plus-jakarta-sans">ResumeATS</h1>
+    </div>
+  </header>
+
+  <div id="statusMsg"></div>
+
+  <main>
+    <div class="space-y-2">
+      <label class="section-label font-mono"><span class="material-symbols-outlined cursor-default">key</span>NVIDIA NIM
+        API Key</label>
+      <div id="apiKeyInput" class="input-group">
+        <div class="input-wrapper">
+          <input type="password" id="apiKey" placeholder="nvapi-...">
+          <div class="input-border"></div>
+        </div>
+        <button class="btn-save" id="saveApiKeyBtn">Save</button>
+      </div>
+      <div id="apiKeySaved" style="display:none">
+        <div class="saved-key">
+          <span class="saved-key-text">✓ API key saved</span>
+          <button class="clear-btn" id="clearApiKeyBtn">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="space-y-2">
+      <div class="upload-wrapper" id="uploadZone">
+        <div class="upload-glow"></div>
+        <div class="upload-zone">
+          <div class="upload-icon-box">
+            <span class="material-symbols-outlined">history_edu</span>
+          </div>
+          <p class="upload-text" id="uploadText">Upload Resume</p>
+          <p class="upload-sub" id="uploadSub">.tex (LaTeX source code)</p>
+        </div>
+      </div>
+      <input type="file" id="fileInput" accept=".tex,.txt">
+    </div>
+
+    <div class="actions">
+      <button class="btn-primary" id="analyzeBtn" disabled>
+        <span class="material-symbols-outlined">analytics</span>
+        Analyze Job on this Page
+      </button>
+      <button class="btn-sec" id="autoFillBtn">
+        Auto-Fill Only
+      </button>
+    </div>
+  </main>
+
+  <footer>
+    <div class="status-indicator">
+      <div class="status-dot"></div>
+      <span class="status-text">System Ready</span>
+    </div>
+    <div class="footer-links">
+      <a href="#" id="historyLnk">History</a>
+      <a href="#" id="settingsLnk">Settings</a>
+    </div>
+  </footer>
+
+  <script src="popup.js"></script>
+</body>
+
+</html>
