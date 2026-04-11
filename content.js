@@ -190,16 +190,34 @@ function closePanel() {
 
 }
 
+function updateFillData() {
+  if (!document.getElementById('fill-name')) return;
+  S.fillData = {
+    name: gv('fill-name'), email: gv('fill-email'), phone: gv('fill-phone'), location: gv('fill-location'),
+    linkedIn: gv('fill-linkedin'), website: gv('fill-website'), summary: gv('fill-summary'),
+    cctc: gv('fill-cctc'), ectc: gv('fill-ectc'), college: gv('fill-college'), degree: gv('fill-degree'),
+    gradYear: gv('fill-gradYear'), experience: gv('fill-experience'), company: gv('fill-company'),
+    notice: gv('fill-notice'), prefLocations: gv('fill-prefLocations')
+  };
+}
+
 function switchTab(tab) {
   const panel = document.getElementById('resumeats-panel');
   if (!panel) return;
+
+  // Save current autofill data before switching
+  if (S.tab === 'autofill') updateFillData();
+
   S.tab = tab;
   panel.querySelectorAll('.rats-tab').forEach(t =>
     t.classList.toggle('active', t.dataset.tab === tab));
   panel.querySelectorAll('.rats-panel').forEach(p =>
     p.classList.toggle('active', p.id === 'panel-' + tab));
   const bar = document.getElementById('rats-action-bar');
-  if (bar) bar.style.display = (tab === 'changes' && S.suggestions.length > 0) ? 'block' : 'none';
+  if (bar) bar.style.display = (tab === 'changes' && S.suggestions.length > 0) ? 'flex' : 'none';
+
+  // Render review if it was clicked
+  if (tab === 'review') renderReview();
 }
 
 // ── Job description ────────────────────────────────────────────────────
@@ -820,17 +838,7 @@ function field(id, label, val, ph) {
 }
 
 function goToReview() {
-  S.fillData = {
-    name: gv('fill-name'), email: gv('fill-email'),
-    phone: gv('fill-phone'), location: gv('fill-location'),
-    linkedIn: gv('fill-linkedin'), website: gv('fill-website'),
-    summary: gv('fill-summary'),
-    cctc: gv('fill-cctc'), ectc: gv('fill-ectc'),
-    college: gv('fill-college'), degree: gv('fill-degree'),
-    gradYear: gv('fill-gradYear'), experience: gv('fill-experience'),
-    company: gv('fill-company'), notice: gv('fill-notice'),
-    prefLocations: gv('fill-prefLocations')
-  };
+  updateFillData();
   renderReview();
   switchTab('review');
 }
@@ -865,9 +873,10 @@ function renderReview() {
             <span class="rats-mini-score-val">${updatedScore}</span>
           </div>
           <div class="rats-review-score-details">
-            <div class="label">ATS COMPATIBILITY</div>
-            <div class="title">Optimal Match</div>
-            <div class="sub">${S.selected.size} Changes applied${totalImpact > 0 ? ` (+${totalImpact}pts)` : ''}</div>
+            <div class="label">NEW ATS SCORE</div>
+            <div class="title" style="font-size: 24px; color: #00e87a; margin-top: 4px;">${updatedScore}%</div>
+            <div class="sub" style="margin-top: 6px;">Original Score: <b>${S.score || 0}%</b></div>
+            <div class="sub" style="color: #61ff98;">+${totalImpact} points from ${S.selected.size} changes</div>
           </div>
         </div>
         <div class="rats-review-info">
