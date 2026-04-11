@@ -132,7 +132,7 @@
         </div>
         <div class="rats-action-row">
           <button class="rats-btn-solid" id="btn-dl" data-action="downloadPdf" disabled>
-            <span class="rats-material-icon">download</span> Download PDF
+            <span class="rats-material-icon">check_circle</span> Apply Selected & Download
           </button>
           <button class="rats-btn-icon" data-action="goToAutofill" title="Go to Auto-Fill">
             <span class="rats-material-icon fill">bolt</span>
@@ -162,6 +162,7 @@
         if (a === 'retry') retry();
         if (a === 'generateCoverLetter') generateCoverLetter();
         if (a === 'copyCoverLetter') copyCoverLetter();
+        if (a === 'downloadCoverLetter') downloadCoverLetter();
         return;
       }
 
@@ -316,6 +317,16 @@ CRITICAL RULES FOR SUGGESTIONS:
           return match.replace(/\\+(?!")/g, '\\\\');
         });
 
+        // Fix common LLM hallucinated trailing parenthesis before object close or comma
+        // E.g. "Workday Studio}.")}, -> "Workday Studio."},
+        jsonStr = jsonStr.replace(/"\s*[\)\]]+\s*}/g, '"}');
+        jsonStr = jsonStr.replace(/"\s*[\)\]]+\s*,/g, '",');
+        
+        // Fix missing closing brackets for arrays before next JSON keys
+        // E.g. "Java", "keywordsMissing": -> "Java"], "keywordsMissing":
+        jsonStr = jsonStr.replace(/"\s*,\s*"keywordsMissing"/g, '"], "keywordsMissing"');
+        jsonStr = jsonStr.replace(/"\s*,\s*"suggestions"/g, '"], "suggestions"');
+
         console.log('Sanitized JSON:', jsonStr);
         try { data = JSON.parse(jsonStr); }
         catch (e2) {
@@ -324,6 +335,7 @@ CRITICAL RULES FOR SUGGESTIONS:
         }
       }
 
+      S.selected.clear();
       S.score = data.score;
       S.suggestions = data.suggestions || [];
       S.fillData = data.profileData || {};
@@ -504,9 +516,9 @@ CRITICAL RULES FOR SUGGESTIONS:
         </div>`;
     };
 
-    const selected = [...S.selected].map(i => S.suggestions[i]);
+    const selected = [...S.selected].map(i => S.suggestions[i]).filter(Boolean);
     const changes = selected.map((s, i) =>
-      `CHANGE ${i + 1} — ${s.title}\n  FIND:    ${JSON.stringify((s.originalText || '').trim())}\n  REPLACE: ${JSON.stringify((s.replacementText || '').trim())}`
+      `CHANGE ${i + 1} — ${s?.title || 'Untitled'}\n  FIND:    ${JSON.stringify((s?.originalText || '').trim())}\n  REPLACE: ${JSON.stringify((s?.replacementText || '').trim())}`
     ).join('\n\n');
     const lineCount = S.latexSource.split('\n').length;
 
@@ -978,11 +990,14 @@ Output ONLY the full, final letter text, starting with the header. FULL COVER LE
           </div>
           <div class="rats-cl-body">${esc(letterText).replace(/\n/g, '<br>')}</div>
           <div class="rats-cl-actions">
-            <button class="rats-btn-solid" data-action="copyCoverLetter" style="flex:1">
-              <span class="rats-material-icon">content_copy</span> Copy to Clipboard
+            <button class="rats-btn-solid" data-action="downloadCoverLetter" style="flex:1">
+              <span class="rats-material-icon">download</span> Download
+            </button>
+            <button class="rats-btn-solid" data-action="copyCoverLetter" style="flex:1; background: var(--rats-surface-high); color: white;">
+              <span class="rats-material-icon">content_copy</span> Copy
             </button>
             <button class="rats-btn-outline" data-action="generateCoverLetter" style="flex:1">
-              <span class="rats-material-icon">refresh</span> Regenerate
+              <span class="rats-material-icon">refresh</span> Retry
             </button>
           </div>
         </div>`;
@@ -1016,6 +1031,30 @@ Output ONLY the full, final letter text, starting with the header. FULL COVER LE
       document.body.removeChild(ta);
       toast('✓ Cover letter copied to clipboard!');
     }
+  }
+
+  function downloadCoverLetter() {
+    if (!S.coverLetter) { toast('Generate a cover letter first', true); return; }
+    
+    // Create a blob from the cover letter string
+    const blob = new Blob([S.coverLetter], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    
+    // Create a temporary anchor to trigger the download
+    const a = document.createElement('a');
+    a.href = url;
+    
+    // Clean company name for the filename, or fallback to 'Company'
+    const companyStr = (S.companyName || 'Company').replace(/[^a-zA-Z0-9]/g, '_');
+    a.download = `Cover_Letter_${companyStr}.txt`;
+    
+    document.body.appendChild(a);
+    a.click();
+    
+    // Cleanup
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast('✓ Cover letter downloaded!');
   }
 
   // ── Toast ──────────────────────────────────────────────────────────────

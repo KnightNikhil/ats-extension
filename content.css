@@ -120,7 +120,7 @@
 .rats-content::-webkit-scrollbar { width: 6px; }
 .rats-content::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 4px; }
 .rats-content::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
-.rats-panel { display: none; padding: 24px; padding-bottom: 180px; }
+.rats-panel { display: none; padding: 24px; padding-bottom: 240px; }
 .rats-panel.active { display: block; }
 
 /* ── Loading ──────────────────────────── */
