@@ -1,5 +1,8 @@
 // background.js - Service Worker (no external scripts - MV3 CSP blocks them)
 
+chrome.sidePanel.setPanelBehavior({ openPanelOnActionClick: true }).catch(console.error);
+
+
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'extractPDF') {
     extractPdfText(message.base64)

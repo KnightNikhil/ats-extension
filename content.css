@@ -25,13 +25,12 @@
 
 #resumeats-panel {
   position: fixed;
-  top: 16px;
-  right: 16px;
-  width: 380px;
-  height: calc(100vh - 32px);
+  top: 0;
+  right: 0;
+  width: 400px;
+  height: 100vh;
   background-color: var(--rats-surface);
-  border: 1px solid rgba(255,255,255,0.05);
-  border-radius: 2rem;
+  border-left: 1px solid rgba(255,255,255,0.05);
   z-index: 2147483647;
   font-family: var(--rats-font-body);
   color: var(--rats-on-surface);
@@ -120,7 +119,7 @@
 .rats-content::-webkit-scrollbar { width: 6px; }
 .rats-content::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 4px; }
 .rats-content::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
-.rats-panel { display: none; padding: 24px; padding-bottom: 240px; }
+.rats-panel { display: none; padding: 24px; }
 .rats-panel.active { display: block; }
 
 /* ── Loading ──────────────────────────── */
@@ -249,10 +248,12 @@
 
 /* ── Fixed Action Bar ──────────────────── */
 .rats-action-bar {
-  position: absolute; bottom: 0; left: 0; width: 100%;
-  background: rgba(31,31,36,0.6); backdrop-filter: blur(20px);
+  width: 100%;
+  background: rgba(31,31,36,0.9); backdrop-filter: blur(20px);
   padding: 16px; display: flex; flex-direction: column; gap: 12px;
   border-top: 1px solid rgba(255,255,255,0.05); z-index: 100;
+  flex-shrink: 0;
+  margin-top: auto;
 }
 .rats-action-top { display: flex; justify-content: space-between; align-items: center; padding: 0 8px; }
 .rats-action-status { font-family: var(--rats-font-mono); font-size: 11px; color: var(--rats-on-surface); text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
@@ -347,3 +348,28 @@
   box-shadow: 0 8px 24px rgba(0,0,0,0.5);
 }
 .rats-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* Override Panel Styles for Sidepanel MV3 Architecture */
+body.sidepanel-mode {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background-color: var(--rats-bg, #0e0e13);
+}
+
+body.sidepanel-mode #resumeats-panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100vh;
+  transform: none;
+  transition: opacity 0.3s;
+  border-radius: 0;
+  border-left: none;
+  box-shadow: none;
+}

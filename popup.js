@@ -125,37 +125,17 @@ function refreshAnalyzeBtn(data) {
 // We just send it a message. The popup stays open until sendMessage callback
 // fires, THEN we close it — no race condition.
 function analyzeCurrentPage() {
-  chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
-    if (!tabs[0]) return showStatus('No active tab', 'error');
-    chrome.tabs.sendMessage(tabs[0].id, { action: 'openPanel' }, response => {
-      // Ignore response errors (content script may not have loaded yet on brand new tab)
-      if (chrome.runtime.lastError) {
-        // Fallback: inject manually then send
-        chrome.scripting.executeScript(
-          { target: { tabId: tabs[0].id }, files: ['content.js'] },
-          () => chrome.tabs.sendMessage(tabs[0].id, { action: 'openPanel' }, () => window.close())
-        );
-        return;
-      }
-      window.close();
-    });
-  });
+  document.querySelector('header').style.display = 'none';
+  document.querySelector('main').style.display = 'none';
+  document.querySelector('footer').style.display = 'none';
+  if(window.triggerResumeATSPanel) window.triggerResumeATSPanel('openPanel');
 }
 
 function autoFillOnly() {
-  chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
-    if (!tabs[0]) return;
-    chrome.tabs.sendMessage(tabs[0].id, { action: 'autoFillOnly' }, response => {
-      if (chrome.runtime.lastError) {
-        chrome.scripting.executeScript(
-          { target: { tabId: tabs[0].id }, files: ['content.js'] },
-          () => chrome.tabs.sendMessage(tabs[0].id, { action: 'autoFillOnly' }, () => window.close())
-        );
-        return;
-      }
-      window.close();
-    });
-  });
+  document.querySelector('header').style.display = 'none';
+  document.querySelector('main').style.display = 'none';
+  document.querySelector('footer').style.display = 'none';
+  if(window.triggerResumeATSPanel) window.triggerResumeATSPanel('autoFillOnly');
 }
 
 // ── Claude API helper (called from popup context) ──────────────────────────
