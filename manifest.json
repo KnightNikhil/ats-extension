@@ -1,6 +1,6 @@
 {
   "manifest_version": 3,
-  "name": "ResumeATS — Smart Job Apply",
+  "name": "ApplyIQ",
   "version": "1.0.0",
   "description": "ATS score checker, resume optimizer, and auto-fill powered by Claude AI.",
   "permissions": [
@@ -14,11 +14,16 @@
     "<all_urls>",
     "https://latex.ytotech.com/*"
   ],
+  "icons": {
+    "16": "icons/applyiq_icon.png",
+    "48": "icons/applyiq_icon.png",
+    "128": "icons/applyiq_icon.png"
+  },
   "action": {
     "default_icon": {
-      "16": "icons/icon16.png",
-      "48": "icons/icon48.png",
-      "128": "icons/icon128.png"
+      "16": "icons/applyiq_icon.png",
+      "48": "icons/applyiq_icon.png",
+      "128": "icons/applyiq_icon.png"
     }
   },
   "side_panel": {
@@ -27,6 +32,12 @@
   "background": {
     "service_worker": "background.js"
   },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["injector.js"]
+    }
+  ],
   "web_accessible_resources": [
     {
       "resources": [

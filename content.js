@@ -51,8 +51,10 @@ if (!document.getElementById('rats-fonts')) {
 // ── Build panel ───────────────────────────────────────────────────────
 // Class names MUST match content.css exactly.
 function buildPanel() {
-  if (document.getElementById('resumeats-panel')) {
-    document.getElementById('resumeats-panel').classList.add('open');
+  const existing = document.getElementById('resumeats-panel');
+  if (existing) {
+    existing.style.display = 'flex'; // Ensure visible on reopen
+    existing.classList.add('open');
     return;
   }
 
@@ -60,7 +62,10 @@ function buildPanel() {
   el.id = 'resumeats-panel';
   el.innerHTML = `
       <div class="rats-header">
-        <div class="rats-logo-text">ResumeATS</div>
+        <div class="header-left" style="display:flex;align-items:center;gap:8px;">
+          <span class="rats-material-icon fill" style="color:#00E87A; font-size:24px">bolt</span>
+          <span class="rats-logo-text">ApplyIQ</span>
+        </div>
         <button class="rats-close" id="rats-close">
           <span class="rats-material-icon">close</span>
         </button>
@@ -186,8 +191,19 @@ function buildPanel() {
 }
 
 function closePanel() {
-  document.getElementById('resumeats-panel')?.classList.remove('open');
+  const p = document.getElementById('resumeats-panel');
+  if (p) {
+    p.classList.remove('open');
+    p.style.display = 'none'; // Explicitly hide
+  }
 
+  // Restore the base popup UI so the user can upload a new resume
+  const h = document.querySelector('header');
+  const m = document.querySelector('main');
+  const f = document.querySelector('footer');
+  if (h) h.style.display = ''; // Reset inline style
+  if (m) m.style.display = '';
+  if (f) f.style.display = '';
 }
 
 function updateFillData() {

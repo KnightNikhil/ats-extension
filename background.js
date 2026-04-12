@@ -24,6 +24,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       .catch(err => sendResponse({ success: false, error: err.message }));
     return true;
   }
+
+  if (message.action === 'openSidePanel') {
+    chrome.sidePanel.open({ windowId: sender.tab.windowId });
+    return true;
+  }
 });
 
 // ─── Pure JS PDF Text Extractor ───────────────────────────────────────────

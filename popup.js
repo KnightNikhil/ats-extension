@@ -5,7 +5,11 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('saveApiKeyBtn').addEventListener('click', saveApiKey);
   document.getElementById('clearApiKeyBtn').addEventListener('click', clearApiKey);
   document.getElementById('apiKey').addEventListener('keydown', e => { if (e.key === 'Enter') saveApiKey(); });
-  document.getElementById('uploadZone').addEventListener('click', () => document.getElementById('fileInput').click());
+  document.getElementById('uploadZone').addEventListener('click', () => {
+    const finput = document.getElementById('fileInput');
+    finput.value = '';
+    finput.click();
+  });
   document.getElementById('fileInput').addEventListener('change', e => handleTexUpload(e.target));
   document.getElementById('analyzeBtn').addEventListener('click', analyzeCurrentPage);
   document.getElementById('autoFillBtn').addEventListener('click', autoFillOnly);
