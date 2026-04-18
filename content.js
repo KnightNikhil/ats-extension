@@ -937,8 +937,10 @@ function startAutofill() {
     company: gv('fill-company'), notice: gv('fill-notice'),
     prefLocations: gv('fill-prefLocations')
   };
+
+  // Build the mapping array to pass into the injected script
   const map = [
-    { p: ['name', 'full.name', 'fullname'], v: S.fillData.name },
+    { p: ['name', 'full.name', 'fullname', 'full name'], v: S.fillData.name },
     { p: ['email', 'e-mail'], v: S.fillData.email },
     { p: ['phone', 'telephone', 'mobile'], v: S.fillData.phone },
     { p: ['location', 'city', 'address'], v: S.fillData.location },
@@ -955,56 +957,89 @@ function startAutofill() {
     { p: ['notice period', 'notice'], v: S.fillData.notice },
     { p: ['open to', 'preferred location', 'willing to relocate', 'locations'], v: S.fillData.prefLocations }
   ];
-  let n = 0;
-  document.querySelectorAll('input:not([type=hidden]):not([type=submit]):not([type=checkbox]):not([type=radio]),textarea').forEach(inp => {
-    if (inp.closest('#resumeats-panel')) return;
-    let labelText = '';
-    if (inp.labels && inp.labels.length > 0) {
-      labelText = Array.from(inp.labels).map(l => l.innerText).join(' ');
-    }
-    const ariaLabelledBy = inp.getAttribute('aria-labelledby') ? (document.getElementById(inp.getAttribute('aria-labelledby'))?.innerText || '') : '';
 
-    let parentText = '';
-    const parent = inp.closest('div[role="listitem"], .freebirdFormviewerViewItemsItemItem, .js-form-item, .form-group, .field, label, tr');
-    if (parent) {
-      parentText = parent.innerText || '';
-    } else if (inp.parentElement && inp.parentElement.innerText) {
-      parentText = inp.parentElement.innerText || '';
-    }
-    if (parentText.length > 150) parentText = '';
+  // Inject the autofill logic into the active tab's page context
+  chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
+    if (!tabs[0]) { toast('No active tab found', true); return; }
+    chrome.scripting.executeScript({
+      target: { tabId: tabs[0].id },
+      args: [map],
+      func: (fieldMap) => {
+        let n = 0;
+        document.querySelectorAll('input:not([type=hidden]):not([type=submit]):not([type=checkbox]):not([type=radio]):not([type=file]),textarea,select').forEach(inp => {
+          // Skip extension panel inputs if somehow injected
+          if (inp.closest('#resumeats-panel') || inp.closest('#applyiq-floating-btn')) return;
 
-    const attrs = [
-      inp.name, inp.id, inp.placeholder, inp.getAttribute('aria-label'), ariaLabelledBy, labelText, parentText
-    ].filter(Boolean).join(' ').toLowerCase();
+          let labelText = '';
+          if (inp.labels && inp.labels.length > 0) {
+            labelText = Array.from(inp.labels).map(l => l.innerText).join(' ');
+          }
+          const ariaLabelledBy = inp.getAttribute('aria-labelledby')
+            ? (document.getElementById(inp.getAttribute('aria-labelledby'))?.innerText || '')
+            : '';
 
-    for (const { p, v } of map) {
-      if (!v) continue;
-      if (p.some(x => attrs.includes(x))) {
-        try {
-          inp.focus();
-          // In React/Angular, properties are patched. The safest way is to force the native window prototype
-          const isTextarea = inp.tagName.toLowerCase() === 'textarea';
-          const nativeProto = isTextarea ? window.HTMLTextAreaElement.prototype : window.HTMLInputElement.prototype;
-          const setter = Object.getOwnPropertyDescriptor(nativeProto, 'value')?.set;
+          // Walk up DOM tree to find contextual text (more aggressive parent search)
+          let parentText = '';
+          const parent = inp.closest('div[role="listitem"], .freebirdFormviewerViewItemsItemItem, .js-form-item, .form-group, .field, label, tr, .MuiFormControl-root, .form-field, [class*="field"], [class*="form"]');
+          if (parent) {
+            parentText = parent.innerText || '';
+          } else {
+            // Walk up to 3 parent levels looking for text context
+            let el = inp.parentElement;
+            for (let depth = 0; depth < 3 && el; depth++) {
+              const text = el.innerText || '';
+              if (text.length > 0 && text.length < 150) {
+                parentText = text;
+                break;
+              }
+              el = el.parentElement;
+            }
+          }
+          if (parentText.length > 200) parentText = '';
 
-          if (setter) setter.call(inp, v);
-          else inp.value = v;
-        } catch (e) {
-          inp.value = v;
-        }
+          const attrs = [
+            inp.name, inp.id, inp.placeholder, inp.getAttribute('aria-label'),
+            ariaLabelledBy, labelText, parentText,
+            inp.getAttribute('data-testid'), inp.getAttribute('autocomplete')
+          ].filter(Boolean).join(' ').toLowerCase();
 
-        inp.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-        inp.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
-        inp.dispatchEvent(new Event('blur', { bubbles: true, composed: true }));
-        inp.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, composed: true, key: 'Enter' }));
+          for (const { p, v } of fieldMap) {
+            if (!v) continue;
+            if (p.some(x => attrs.includes(x))) {
+              try {
+                inp.focus();
+                // Use native setter to work with React/Angular/Vue controlled inputs
+                const isTextarea = inp.tagName.toLowerCase() === 'textarea';
+                const isSelect = inp.tagName.toLowerCase() === 'select';
+                if (isSelect) {
+                  inp.value = v;
+                } else {
+                  const nativeProto = isTextarea ? window.HTMLTextAreaElement.prototype : window.HTMLInputElement.prototype;
+                  const setter = Object.getOwnPropertyDescriptor(nativeProto, 'value')?.set;
+                  if (setter) setter.call(inp, v);
+                  else inp.value = v;
+                }
+              } catch (e) {
+                inp.value = v;
+              }
 
-        inp.style.outline = '2px solid #00e87a';
-        setTimeout(() => inp.style.outline = '', 3000);
-        n++; break;
+              inp.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+              inp.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+              inp.dispatchEvent(new Event('blur', { bubbles: true, composed: true }));
+
+              inp.style.outline = '2px solid #00e87a';
+              setTimeout(() => inp.style.outline = '', 3000);
+              n++; break;
+            }
+          }
+        });
+        return n;
       }
-    }
+    }, res => {
+      const filled = res?.[0]?.result || 0;
+      toast(`✓ Filled ${filled} field${filled !== 1 ? 's' : ''}`);
+    });
   });
-  toast(`✓ Filled ${n} field${n !== 1 ? 's' : ''}`);
 }
 
 function submitApp() {
@@ -1084,6 +1119,28 @@ Now, using your analysis, write the cover letter. It must have atleast:
 - An opening paragraph that hooks the reader and states the specific role.
 - A body paragraph that provides concrete, quantified evidence of how the candidate's skills solve the company's needs. Focus on the 2-3 most impactful points you identified.
 - A closing paragraph that conveys genuine enthusiasm for the company's mission and includes a clear call to action.
+
+IMPORTANT INSTRUCTIONS:
+- Do NOT change, add, or exaggerate any content.
+- Use short sections and bullet points instead of long paragraphs.
+- Keep it professional, concise, and impact-driven.
+- Maintain a confident and outcome-oriented tone.
+- Ensure the cover letter can be skimmed in 5–10 seconds.
+
+FORMAT:
+1. Header (Name, Email, Phone, Location)
+2. Opening paragraph (role + intent + summary)
+3. Key Skills / Expertise (bullet points)
+4. Key Contributions / Experience (bullet points with impact)
+5. Why Company? (short, tailored)
+6. Closing paragraph (confidence + call to action)
+
+STYLE GUIDELINES:
+- Use bullet points wherever possible
+- Highlight impact (metrics, scale, systems)
+- Avoid long paragraphs
+- Keep sentences crisp and direct
+- No unnecessary filler words
 
 Candidate CV:
 ${cvText}
